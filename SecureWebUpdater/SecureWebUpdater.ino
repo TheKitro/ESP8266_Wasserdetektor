@@ -18,6 +18,7 @@
 #define MQTT_LOG_ENABLED 1
 #include <MqttClient.h>
 
+//#region variables
 const char* host = "esp8266-webupdate";
 const char* update_path = "/firmware";
 const char* update_username = UPDATEUSER;
@@ -41,12 +42,11 @@ bool onTest = false;
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+//#endregion
 
-
-
+//#region functions
 void setup(void) 
 {
-
   Serial.begin(115200);
   Serial.println();
   Serial.println("Booting Sketch...");
@@ -55,27 +55,27 @@ void setup(void)
 //ToDo Konfigurationsdatei einlesen, die über OTA hochgeladen wurde und den Variablen zuweisen. 
 
   
-//Start Wifi
+//#region Wifi
   WiFi.mode(WIFI_AP_STA);
-  
   WiFi.begin(ssid1, password1);
+  
   while (WiFi.waitForConnectResult() != WL_CONNECTED) 
   {
-    Serial.printf("WiFi 1 '%s' failed, retrying.\n", ssid1);    
+    Serial.printf("WiFi 1 '%s' failed, retrying.\n", ssid1);
+    WiFi.begin(ssid2, password2);
     
-    WiFi.begin(ssid2, password2);    
     if (WiFi.waitForConnectResult() != WL_CONNECTED)
     { 
       Serial.printf("WiFi 2 '%s' failed, retrying.\n", ssid2); 
-      
       WiFi.begin(ssid1, password1);
     }    
   }
+  
   Serial.printf("WiFi Connected: '%s'\n", WiFi.SSID());
-//End Wifi
+//#endregion
 
 
-//Start OTA Web  
+//#region OTA Web  
   MDNS.begin(host);
 
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
@@ -83,28 +83,25 @@ void setup(void)
 
   MDNS.addService("http", "tcp", 80);
   Serial.printf("HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", host, update_path, update_username, update_password);
-//End OTA Web
+//#endregion
 
 
-//Start MQTT Client
+//#region MQTT Client
 //  MqttClient.begin("mqtt://things.ubidots.com", net);
 //  matrix.begin();
 //  connect();
-//End MQTT Client  
+//#endregion
 
 
-//Start Wasser Check
+//#region Wasserstandsprüfung
   pinMode(pinWasserLvl1,INPUT);
   pinMode(pinWasserLvl2,INPUT);
   pinMode(pinWasserLvl3,INPUT);
   pinMode(pinTestTaster,INPUT);  
-  
   pinMode(pinTestLED,OUTPUT);
   pinMode(pinBuzzer,OUTPUT);  
-//End Wasser Check
+//#endregion
 }
-
-
 
 void loop(void) 
 {
@@ -121,7 +118,7 @@ void loop(void)
 //Check Water LVL3  
   ///ToDo Verdrahten und Code
   
-//Check Temp
+//Check Temperatur
   ///ToDo DHT22 Verdrahten und Code
 
 //Check Test Button
@@ -150,6 +147,21 @@ void loop(void)
 // Serial.println("running...");
 }
 
+// Gets the measured water level.
+// 0 is for no water level.
+short GetWaterLevel()
+{
+  // throw new NotImplementedException();
+  return 0;
+}
+
+// Gets the measured temperature in °C.
+int GetTemperature()
+{
+  // throw new NotImplementedException();
+  return 0;
+}
+
 void CheckTestButton()
 {
   if (digitalRead(pinTestTaster)==HIGH)
@@ -164,3 +176,4 @@ void CheckTestButton()
     onTest = false;
   }
 }
+//#endregion
