@@ -13,10 +13,18 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
 
+
+
 #include "PrivateAccounts.h"
 
 #define MQTT_LOG_ENABLED 1
 #include <MqttClient.h>
+
+//Setup DHT22
+#include <DHT.h>
+#define DHT_TYPE DHT22
+ 
+
 
 //#region variables
 const char* host = "esp8266-webupdate";
@@ -30,18 +38,23 @@ const char* password1 = WLAN1GPSK;
 const char* ssid2 = WLAN2GSSID;
 const char* password2 = WLAN2GPSK;
 
-int pinWasserLvl1 = 5; //D1
-int pinWasserLvl2 = 4; //D2
-int pinWasserLvl3 = 0; //D3
+int pinWasserLvl1 = 5;  //D1
+int pinWasserLvl2 = 4;  //D2
+int pinWasserLvl3 = 0;  //D3
 int pinTestTaster = 16; //D0 
   
-int pinTestLED = 2; //D4 Eingebaute LED
-int pinBuzzer = 14;    //D5
+int pinTestLED = 2;     //D4 Eingebaute LED
+int pinBuzzer = 14;     //D5
 
+int pinDHT22 = 12;      //D6
 bool onTest = false;
+
+DHT dht(pinDHT22, DHT_TYPE);
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+
+
 //#endregion
 
 //#region functions
@@ -54,6 +67,9 @@ void setup(void)
 
 //ToDo Konfigurationsdatei einlesen, die über OTA hochgeladen wurde und den Variablen zuweisen. 
 
+//#region DHT22
+dht.begin();
+//#endregion
   
 //#region Wifi
   WiFi.mode(WIFI_AP_STA);
@@ -119,7 +135,14 @@ void loop(void)
   ///ToDo Verdrahten und Code
   
 //Check Temperatur
-  ///ToDo DHT22 Verdrahten und Code
+//Check Humidity  
+ Serial.print("Temperatur: ");
+  Serial.print(GetTemperature());
+  Serial.print("°C, Luftfeuchtigkeit: ");
+  Serial.print(GetHumidity());
+  Serial.println("%");
+
+  
 
 //Check Test Button
   ///ToDo Taster mit 10K Widerstand verdrahten
@@ -156,10 +179,15 @@ short GetWaterLevel()
 }
 
 // Gets the measured temperature in °C.
-int GetTemperature()
-{
-  // throw new NotImplementedException();
-  return 0;
+float GetTemperature()
+{ 
+  return dht.readTemperature();
+}
+
+// Gets the measured humidity in %.
+float GetHumidity()
+{ 
+  return dht.readHumidity();
 }
 
 void CheckTestButton()
